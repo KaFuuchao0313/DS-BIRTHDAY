@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title> HAPPY BIRTH?AY </title>
+    <style>
+        /*字体处理*/
+        @font-face {
+            /*自命名*/
+            font-family: 'pixel'; 
+            src: url('fusionpixelwoff2/fusion-pixel-10px-monospaced-zh_hans.otf.woff2') format('woff2'); 
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /*base*/
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background-color: #000;
+            font-family: 'pixel', sans-serif; 
+            /* 针对像素字体的渲染优化 */
+            /* 它可以防止浏览器自动把像素点“磨皮”变模糊 */
+            image-rendering: pixelated; 
+            -webkit-font-smoothing: none; /* 关闭抗锯齿 */
+        }
+
+        /*背景*/
+        #video-background {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            /* 确保视频铺满屏幕不留黑边 */
+            object-fit: cover; 
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        /*slight shake*/
+        .video-shake {
+            animation: gentleShake 10s ease-in-out infinite;
+        }
+
+        @keyframes gentleShake {
+            0%, 100% { transform: scale(1.1) translate(0, 0) rotate(0deg); }
+            25% { transform: scale(1.1) translate(10px, 5px) rotate(0.5deg); }
+            50% { transform: scale(1.1) translate(-5px, 10px) rotate(-0.5deg); }
+            75% { transform: scale(1.1) translate(-10px, -5px) rotate(0.2deg); }
+        }
+
+        #text-display {
+            transition: opacity 0.5s;
+            z-index: 100;
+        }
+
+        /*字幕*/
+        .subtitle {
+            position: absolute;
+            bottom: 10%; 
+            width: 80%;
+            padding-left: 10%;
+            color: white;
+            font-size: 2rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+            z-index: 100;
+            text-shadow: 2px 2px 0px #000;
+            pointer-events: none; 
+        }
+
+        /*心理*/
+        .monologue {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            font-style: italic;
+            font-size: 2.5rem;
+            line-height: 2;
+            z-index: 100;
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        /*全屏交互*/
+        #click-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 200;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <video id="video-background" autoplay muted loop playsinline src=""></video>
+    <div id="text-display"></div>
+    <div id="click-overlay" onclick="handleNext()"></div>    
+
+<script>
+
+    const script = [
+        /*初始*/
+        { 
+            type: 'cover', 
+            text: "",
+            bgVideo:"bgvideo/sunsetcover.mp4"
+        },
+        { 
+            type: 'cover', 
+            text: "",
+            bgVideo:"bgvideo/cover_1.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "???: 哦上帝，我差点忘了……",
+            bgVideo:"bgvideo/cover_2.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "???: 生日快乐……Dr.Salmon。", 
+        },
+        { 
+            type: 'dialogue', 
+            text: "???: 不许个愿吗？", 
+        },
+        /*引子*/
+        { 
+            type: 'monologue', 
+            text: "我很确定，这不是我所处的真实世界。" ,
+            bgVideo:"bgvideo/crushfloor.mp4"
+        },
+        { 
+            type: 'monologue', 
+            text: "此处宛若狭间，天地颠倒，日月同存。" 
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……该死的，那边的高楼是东京塔吧，这玩意儿不是在百八年前就被陨石撞烂了吗？" 
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 时间穿越？五维空间？还是只是梦境？" 
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 不对，失重感太真实了……难道Zhou又在瞎搞人体实验？" 
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 事已至此，先试着重新控制四肢吧。" 
+        },
+        { 
+            type: 'monologue', 
+            text: "嗡——", 
+            bgVideo: "none"
+        },
+        { 
+            type: 'cover', 
+            text: "一阵强大的引力突然袭来。",
+            bgVideo: "bgvideo/crushfloor.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "???: ——喂！醒醒！赶不上午饭了！",
+            bgVideo: "none"
+        },
+        /*chapter 1*/
+        { 
+            type: 'cover', 
+            text: "", 
+            bgVideo: "bgvideo/ch_1.mp4"
+        },
+        { 
+            type: 'monologue', 
+            text: "……", 
+            bgVideo: "none"
+        },
+        { 
+            type: 'monologue', 
+            text: "现在又是……什么情况？"
+        },
+        { 
+            type: 'monologue', 
+            text: "……刚刚是不是有说话声来着。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "???: Salmon？长颈鹿？三文鱼？lu——" 
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 闭嘴。" 
+        },
+        { 
+            type: 'dialogue', 
+            text: "???: 哦！太好了！你终于醒了！" 
+        },
+        { 
+            type: 'monologue', 
+            text: "我缓慢地转动脖子，骨头发出了生涩的声响。",
+        },
+        { 
+            type: 'dialogue', 
+            text: "???: 我还以为你被下了昏昏欲睡咒呢，太可惜了……" ,
+            bgVideo: "bgvideo/window.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……什么？" 
+        },
+        { 
+            type: 'monologue', 
+            text: "旁边喋喋不休的人终于停了话头，低下头来。"
+        },
+        { 
+            type: 'monologue', 
+            text: "瞬间，我们对上了视线。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……Zhou？" 
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 咋了？你睡糊涂了？连最亲爱的同桌也不认识了？" 
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 算了，食堂估计没位置了，我让小精灵捎份外卖吧。" 
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 你要再睡会儿不？" 
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……" 
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 这次又是什么？哈利O特扮演游戏？" 
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 哈利O特是啥？" 
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……算了，我出去一趟。" 
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……",
+            bgVideo: "none"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 这到底是怎么回事？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 这只蠢猫又在打什么坏主意？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 还是说，我真的穿越了？这里是平行世界？"
+        },
+        { 
+            type: 'monologue', 
+            text: "飞速发展的时代让一切都变得理所应当，即便当下还没有研究出异世界之间的灵魂穿越，更别提什么破烂魔咒，但我也很快接受了这一设定。"
+        },
+        { 
+            type: 'monologue', 
+            text: "毕竟这是眼下最合理的解释了。",
+            bgVideo: "bgvideo/church.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 这地方还真长得跟霍格O兹有几分相似……"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 回忆一下还记得的魔咒……"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 呃……LOCOMOTOR——"
+        },
+        { 
+            type: 'monologue', 
+            text: "啪——",
+            bgVideo: "none"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……什么东西砸我脑袋上了……",
+            bgVideo: "bgvideo/book.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 书？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "???: meow——"
+        },
+        { 
+            type: 'monologue', 
+            text: "听见了熟悉的叫声，我不由抬头。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ！Zhou！"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 你在这个世界也可以变成猫吗？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 也是，麦格教授都可以，你现在大变活人也不奇怪……"
+        },
+        { 
+            type: 'dialogue', 
+            text: "???: 你在跟谁说话啊？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ！"
+        },
+        { 
+            type: 'monologue', 
+            text: "不对。"
+        },
+        { 
+            type: 'monologue', 
+            text: "不对，不对。"
+        },
+        { 
+            type: 'monologue', 
+            text: "这人声确实是Zhou，但这只猫也……不对……"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 逗猫呢，没看见吗？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou(?): 啊？哪里有猫啊？我也要逗我也要逗——"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 嗯？眼神不好？不就在——"
+        },
+        { 
+            type: 'monologue', 
+            text: "嗡——",
+            bgVideo: "none"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 怎么回事？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou(?): 欸！你怎么晕倒了！"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou(?): 是不是又没吃早饭！还是昨天又通宵了？！"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou(?): 醒醒——喂！你生日蛋糕还——"
+        },
+        { 
+            type: 'cover', 
+            text: "", 
+            bgVideo: "bgvideo/church.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "",
+            bgVideo: "none"
+        },
+        /*chapter 2*/
+        { 
+            type: 'cover', 
+            text: "", 
+            bgVideo: "bgvideo/ch_2.mp4"
+        },
+        { 
+            type: 'monologue', 
+            text: "我好像有点明白了。",
+            bgVideo: "none"
+        },
+        { 
+            type: 'monologue', 
+            text: "总之，虽然没有任何根据，但我还是认为，我又穿越了。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "???: 下午好。",
+            bgVideo: "bgvideo/cliff.mp4"
+        },
+        { 
+            type: 'monologue', 
+            text: "依旧是再熟悉不过的声音。"
+        },
+        { 
+            type: 'monologue', 
+            text: "安全起见，先判断一下周身的环境。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 悬崖？！"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 不然呢？你自己爬上来的，结果你不知道？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 不是……哎算了，没办法给你解释。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 怎么，难道你意外解锁了飞行能力，瞒着我要偷偷逃之夭夭了？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 哎呀，那可是有违我们的决斗规则呢。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 决斗？什么意思？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 我刚才就逗逗你，你怎么也装上傻了？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 不是，这又是闹哪出啊？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 演技不错，奥斯卡也会为你惊叹的。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 你听我说，Zhou，其实我——"
+        },
+        { 
+            type: 'monologue', 
+            text: "叮——",
+            bgVideo: "none"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……什么？",
+            bgVideo: "bgvideo/gun.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 你今天话格外多。"
+        },
+        { 
+            type: 'monologue', 
+            text: "我知道了。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 福尔O斯和莫里O蒂？"
+        },
+        { 
+            type: 'monologue', 
+            text: "Zhou没有说话，只是轻轻地把枪口抵上我的前额。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 真神奇……在这个世界我们居然是这种关系吗？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 什么？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 同生共死的……宿敌？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 没有和你一起死的义务。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 确实，毕竟我会活下来。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 我猜，你这把左轮手枪里，应该没有子弹吧。",
+            bgVideo: "bgvideo/knife.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: ……"
+        },
+        { 
+            type: 'monologue', 
+            text: "他冲我笑了一下，我推进他体内的匕首还插在肋骨旁，但他好像并不在乎。"
+        },
+        { 
+            type: 'monologue', 
+            text: "血从伤口渗出，落到石壁上，溅起鲜红的圆点。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 你答对了一半。"
+        },
+        { 
+            type: 'monologue', 
+            text: "他抬起手，把血抹在了我的脸上。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 神命令以色列人把羊羔血涂在门框上，好叫审判越过以色列人的家，不降在他们身上。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 我不是羊羔，你也并非信徒，不过没关系。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 神会原谅你我的。"
+        },
+        { 
+            type: 'monologue', 
+            text: "他扣下了扳机。",
+            bgVideo: "none"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……",
+            bgVideo: "bgvideo/rose.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……这算什么，死前浪漫时刻？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 算你答错的一半。"
+        },
+        { 
+            type: 'monologue', 
+            text: "猛然间，他冲向我，紧紧地箍住我的身体。",
+            bgVideo: "none"
+        },
+        { 
+            type: 'monologue', 
+            text: "失重感顿时席卷周身，我这才意识到，我们的确是要同生共死了。"
+        },
+        { 
+            type: 'monologue', 
+            text: "悬崖原来有这么高吗？为什么我还没有抵达死亡？"
+        },
+        { 
+            type: 'monologue', 
+            text: "太阳光原来有这么刺眼吗？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 对不起。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 诞生日快乐。"
+        },
+        { 
+            type: 'cover', 
+            text: "晃神间，我看见Zhou抽离了我的怀抱。",
+            bgVideo: "bgvideo/wing.mp4"
+        },
+        { 
+            type: 'cover', 
+            text: "用蜡做的翅膀在他身后张开，洒下了几片松落的羽毛。"
+        },
+        { 
+            type: 'cover', 
+            text: "我看见他飞向天空、飞向太阳。"
+        },
+        { 
+            type: 'cover', 
+            text: "飞向了无情的自由。",
+            bgVideo: "none"
+        },
+        /*chapter 3*/
+        { 
+            type: 'cover', 
+            text: "", 
+            bgVideo: "bgvideo/ch_3.mp4"
+        },
+        { 
+            type: 'cover', 
+            text: "", 
+            bgVideo: "bgvideo/balcony.mp4"
+        },
+        { 
+            type: 'monologue', 
+            text: "嗡——",
+            bgVideo: "none"
+        },
+        { 
+            type: 'monologue', 
+            text: "我踉跄了两步，只觉头疼欲裂。", 
+            bgVideo: "bgvideo/balcony.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 不错，现在这又是在哪里？"
+        },
+        { 
+            type: 'monologue', 
+            text: "热风卷起潮湿的空气，我望向窗外，那是一片无边的海域。", 
+            bgVideo: "bgvideo/balcony.mp4"
+        },
+        { 
+            type: 'monologue', 
+            text: "有点像书里描述的千百年前的大陆图景。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 哎……截至到目前为止，我还没有找到可以控制穿越的方法。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 时间不多了，得赶紧理理思路……"
+        },
+        { 
+            type: 'dialogue', 
+            text: "???: 亲爱的，你在自言自语些什么呢？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 又来了。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 让我猜猜，这次我们是什么关系？"
+        },
+        { 
+            type: 'monologue', 
+            text: "滚烫的鼻息凑上后颈的皮肤，被汗浸透的身体隔着布料贴着另一具身体。", 
+            bgVideo: "none"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: …………"
+        },
+        { 
+            type: 'monologue', 
+            text: "一个简直糟糕透顶的猜想从我脑海中冒出。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 我们……是什么关系？",
+            bgVideo: "bgvideo/balcony.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 你觉得呢？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 你先从我身上下去！"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 不要。"
+        },
+        { 
+            type: 'monologue', 
+            text: "说罢，一双手环上我的腰侧，把我连人带到了阳台上。",
+            bgVideo: "bgvideo/summer.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……你适可而止。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 啧，摸两下又少不了肉。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 对失恋的人也不温柔点。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……啊？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 放心，我今天也没心情找你打炮。"
+        },
+        { 
+            type: 'monologue', 
+            text: "无视我震惊的眼神，他默默收回了这个怀抱，走到我旁边，双手撑着栏杆向外探去。"
+        },
+        { 
+            type: 'monologue', 
+            text: "盛夏的阳光斑斓地撒在他的侧脸上，勾勒出他嘴角的弧度。"
+        },
+        { 
+            type: 'monologue', 
+            text: "在四起的蝉声中，我听见他开口。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 不觉得蝉是一种很摇滚的动物吗？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 生命短暂的可笑，所以只能把握夏天尽情地歌唱，在交配后就迅速凋零、死亡。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 盛夏、音乐、性、死亡。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 正位于人生第二个四分之一的我们，不也一样吗？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 确实有够摇滚的。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 但年纪轻轻的，别把死字挂在嘴边，不吉利。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 哈哈哈，所言极是。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 也祝愿你长命百岁，找到你爱的人啊。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 别一天到晚窝在房间不出门，寡一辈子，老了我可管不到你。"
+        },
+        { 
+            type: 'monologue', 
+            text: "说罢，他自顾自地掏出了烟盒，递给了我。",
+            bgVideo: "bgvideo/box.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 来一根？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 我不抽烟。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 哟，真稀罕，这句话居然是从老烟枪嘴里说出来的。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 过个生日，这么有仪式感，还要戒烟了。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 算了，少抽点也好。"
+        },
+        { 
+            type: 'cover', 
+            text: "他信步闲庭地叼起香烟，转过头去，没再看我。",
+            bgVideo: "bgvideo/bubble.mp4"
+        },
+        { 
+            type: 'cover', 
+            text: "泡泡从他指间溢出，透明的膜里盛满阳光，顺着海风飘向远处。"
+        },
+        { 
+            type: 'cover', 
+            text: "视线逐渐模糊，我强撑着眼皮，试图抵御这穿越的前兆。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 你听说过平行宇宙不，老新潮的玩意，我看这几天报纸上都在写。",
+            bgVideo: "none"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 你说，在其他世界里，我们会是什么样的啊？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 在魔法课上当同桌？反目成仇在悬崖决斗？或者就这么平平淡淡的，过完这一生？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 哈哈，下辈子我当猫好了，你窝在实验室搞研究，我就在外面晒太阳。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 就这样，活到世界末日也不错。"
+        },
+        /*chapter 4*/
+        { 
+            type: 'cover', 
+            text: "", 
+            bgVideo: "bgvideo/ch_4.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 醒了？",
+            bgVideo: "bgvideo/light.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……果然是你搞的鬼……"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 说吧，这次又是在干什么？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 尝试时空跳跃，我记录了你的实时脑皮层活动，看起来还挺成功的。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 可不吧，我差点以为我要客死他乡了。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 下次实验，提前知会我一声。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 看我心情吧。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 啊对了，差点忘了。",
+            bgVideo: "bgvideo/cake.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 生日快乐，Dr.Salmon。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 许个愿吧。"
+        },
+        { 
+            type: 'monologue', 
+            text: "望着蛋糕上摇曳的烛光，我突然有些恍如隔世。",
+            bgVideo: "none"
+        },
+        { 
+            type: 'monologue', 
+            text: "霍格O兹，贝O街，西O龙……各个世界的记忆如潮水般涌来，激得我险些没拿稳蛋糕。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 咳咳。",
+            bgVideo: "bgvideo/cake.mp4"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 我希望，Zhou能别在搞这些乱七八糟对生物事业没有用处的实验了，折腾死我这老骨头算了。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 没人跟你说过，愿望说不出来就不灵了吗。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 你今天话怎么这么冲。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 你没发现，你穿越了这么多世界，体验了这么多种关系，但唯独少了某一特殊的relationship吗？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: 啊？"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 意思是我要当你爸爸。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Dr.Salmon: ……我真无语了。"
+        },
+        { 
+            type: 'monologue', 
+            text: "广阔无垠的宇宙啊，请听见我渺小的声音吧。",
+            bgVideo: "none"
+        },
+        { 
+            type: 'monologue', 
+            text: "或许引力早已安排好体面的既定轨道，但可惜，我只负责偏离其中。"
+        },
+        { 
+            type: 'monologue', 
+            text: "我们的下一站何时启程，会去向哪里，这一切的一切都是未知数。"
+        },
+        { 
+            type: 'monologue', 
+            text: "但是。"
+        },
+        { 
+            type: 'dialogue', 
+            text: "Zhou: 我会永远陪在你身边。"
+        },
+
+    ];
+
+    let currentStep = 0;
+    let isTyping = false;
+    let typingTimer = null;
+    let isTransitioning = false;
+
+    function handleNext() {
+        if(isTransitioning) return;
+        if (isTyping) {
+            finishTyping();
+            return;
+        }
+
+        if (currentStep >= script.length) {
+            alert("另一个世界再会。");
+            return;
+        }
+
+        const data = script[currentStep];
+        const video = document.getElementById('video-background');
+        const displayArea = document.getElementById('text-display');
+
+        let needChangeVideo=false;
+
+        if (data.bgVideo) {
+            const currentSrc = video.src || "";
+            if(data.bgVideo) {
+                if (data.bgVideo === "none") {
+                    video.style.opacity = "0";
+                    setTimeout(() => { video.src = ""; });
+                }
+                else if (!currentSrc.endsWith(data.bgVideo)) {
+                    needChangeVideo = true;
+                }
+            }
+        }
+
+        if (needChangeVideo) {
+            isTransitioning = true;
+            video.style.opacity = "0";
+            displayArea.style.opacity = "0";
+            
+            setTimeout(() => {
+                video.src = data.bgVideo;
+                /*cover抖动效果*/
+                if (data.type === 'cover') {
+                    video.classList.add('video-shake');
+                } else {
+                    video.classList.remove('video-shake');
+                }
+                video.load();
+                let playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => { console.log("世界崩坏中:", error); });
+                }
+
+                updateElements(data);
+                video.style.opacity = "1";
+                displayArea.style.opacity = "1";
+
+                isTransitioning=false;
+            }, 500); 
+        } else {
+            if (data.type === 'cover') {
+                video.classList.add('video-shake');
+            } else {
+                video.classList.remove('video-shake');
+            }
+            updateElements(data);
+
+            video.style.opacity="1";
+        }
+        currentStep++;
+    }
+
+    function updateElements(data) {
+        /*打字*/
+        showText(data.text, data.type);
+    }
+
+    function showText(text, type) {
+        const display = document.getElementById('text-display');
+        display.innerHTML = "";
+
+        clearInterval(typingTimer);
+        if(!text) return;
+        const el = document.createElement('div');
+        if (type === 'dialogue') {
+            el.className = 'subtitle typing-active';
+        } else {
+            el.className = 'monologue typing-active';
+        }
+        display.appendChild(el);
+
+        let i = 0;
+        isTyping = true;
+
+        typingTimer = setInterval(() => {
+            if (i < text.length) {
+                el.innerHTML += text.charAt(i);
+                i++;
+            } else {
+                clearInterval(typingTimer);
+                isTyping = false;
+            }
+        }, 60);
+    }
+
+    function finishTyping() {
+        clearInterval(typingTimer);
+        const active = document.querySelector('.typing-active');
+        if (active) {
+            active.innerHTML = script[currentStep - 1].text;
+        }
+        isTyping = false;
+    }
+
+    window.onload = () => {
+        console.log("页面已加载，等待用户点击...");
+    };
+</script>
+</body>
+</html>
